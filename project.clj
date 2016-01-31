@@ -13,6 +13,11 @@
   
   :uberjar-name "webdev.jar"
   
+  ;; When we type in the terminal, "lein run 8000" runs the server in port 8000
+  ;; and it runs the project's -main function.
+  ;; It calls the -main function in the namespace specified as :main.
+  ;; If the main function is not called -main, you can use a
+  ;; namespaced symbol like clojure.main/main
   :main webdev.core
 
   :profiles {:dev

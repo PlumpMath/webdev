@@ -1,5 +1,7 @@
 (ns webdev.core
-  (:require [ring.adapter.jetty :as jetty]
+  (:require
+            ;; ring.adapter.jetty is an adapter we can use in dev and production
+            [ring.adapter.jetty :as jetty]
             [ring.middleware.reload :refer [wrap-reload]]
             [compojure.core :refer [defroutes GET]]
             [compojure.route :refer [not-found]]
@@ -14,6 +16,7 @@
   {:status 200
    :body "Goodbye, cruel world!"
    :headers {}})
+
 
 (defn about [req]
   {:status 200
@@ -45,6 +48,7 @@
       :body (str "Unknown operator: " op)
       :headers {}})))
 
+
 (defroutes app
   (GET "/" [] greet)
   (GET "/goodbye" [] goodbye)
@@ -54,6 +58,8 @@
   (GET "/request" [] handle-dump )
   (not-found "Page not found"))
 
+;; This is our main function and it runs the jetty adapter
+;; run-jetty takes a handler and an options map.
 (defn -main [port]
   (jetty/run-jetty app                 {:port (Integer. port)}))
 
