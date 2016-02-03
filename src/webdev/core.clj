@@ -5,7 +5,7 @@
             ;; ring.adapter.jetty is an adapter we can use in dev and production
             [ring.adapter.jetty :as jetty]
             [ring.middleware.reload :refer [wrap-reload]]
-            [compojure.core :refer [defroutes GET]]
+            [compojure.core :refer [defroutes ANY GET POST PUT DELETE]]
             [compojure.route :refer [not-found]]
             ;; handle-dump helps us to see the request in a nice format
             ;; It's useful as a debugging tool

@@ -40,7 +40,11 @@
             name
             description]))))
 
-
+;; update-item will change the status of an existing item
+;; execute! return the number of rows that were changed inside of a list
+;; so by comparing it to a list of 1, we can know if we were successful
+;; It returns true if a single row was updated.
+;; false means id not found
 (defn update-item [db id checked]
   (= [1] (db/execute!
           db
@@ -49,3 +53,17 @@
             WHERE id = ?"
             checked
             id])))
+
+(defn delete-item [db id]
+  (= [1] (db/execute!
+          db
+          ["DELETE FROM items
+            WHERE id = ?"
+           id])))
+
+(defn read-items [db]
+  (db/query
+   db
+   ["SELECT id, name, description, checked, date_created
+     FROM items
+     ORDER BY date_created"]))
