@@ -11,7 +11,8 @@
                  [compojure "1.4.0"]
                  ;; clojure.java.jdbc is a wrapper for JDBC-based access to DB.
                  [org.clojure/java.jdbc "0.4.2"]
-                 [postgresql/postgresql "9.1-901-1.jdbc4"]]
+                 [postgresql/postgresql "9.1-901-1.jdbc4"]
+                 [hiccup "1.0.5"]]
 
   ;; We need to specify that we want at least leiningen 2
   ;; wich has better support on heroku

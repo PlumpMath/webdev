@@ -1,12 +1,15 @@
 (ns webdev.core
   ;; We import our model code 
   (:require [webdev.item.model :as items]
-            [webdev.item.handler :refer [handle-index-items] ])
+            [webdev.item.handler :refer [handle-index-items]]
+            [webdev.item.handler :refer [handle-create-item]])
   (:require
             ;; ring.adapter.jetty is an adapter we can use in dev and production
             [ring.adapter.jetty :as jetty]
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.resource :refer [wrap-resource]]
+            [ring.middleware.file-info :refer [wrap-file-info]]
             [compojure.core :refer [defroutes ANY GET POST PUT DELETE]]
             [compojure.route :refer [not-found]]
             ;; handle-dump helps us to see the request in a nice format
@@ -74,11 +77,12 @@
   (GET "/calc/:a/:op/:b" [] calc)
   (GET "/about" [] about)
   (GET "/items" [] handle-index-items)
+  (POST "/items" [] handle-create-item)
   
   ;; para la siguiente ruta usamos un handler que no definimos aquí
   ;; sino que está definido ya en la librería ring.handler.dump
   ;; handle-dump nos permite ver de forma bonita la request
-  (GET "/request" [] handle-dump)
+  (ANY "/request" [] handle-dump)
   (not-found "Page not found"))
 
 ;; middleware stack
@@ -88,17 +92,26 @@
 ;; To do that we create a middleware that adds the db to the Ring request
 ;; Middleware are higher order functions
 ;; That way we will ensure that the database is available to all handlers
+;; Este middleware transforma la request antes de pasársela al handler
 (defn wrap-db [hdlr]
   (fn [req]
     (hdlr (assoc req :webdev/db db))))
 
+;; Este middleware actúa después de que el handler ha actuado sobre la request
+;; es decir, actúa sobre una Ring response
 (defn wrap-server [hdlr]
   (fn [req]
     (assoc-in (hdlr req)  [:headers "Server"] "Geometrica 9000"  )))
 
 
 (def app
-  (wrap-server (wrap-db (wrap-params routes))))
+  (wrap-server
+   (wrap-file-info
+    (wrap-resource
+     (wrap-db
+      (wrap-params
+       routes))
+     "static"))))
 
 ;; This is our main function and it runs the jetty adapter
 ;; run-jetty takes a handler and an options map.

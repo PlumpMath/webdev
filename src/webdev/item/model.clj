@@ -27,8 +27,8 @@
 ;; "Given a database connection and a vector containing SQL and
 ;; optional parameters, perform a simple database query."
 
-;; create-item will create a new item given a name and a description
-;; query will return a list of maps. Each map represents a row. The column
+;; create-item will create a new item. Given a name and a description
+;; db/query will return a list of maps. Each map represents a row. The column
 ;; names are turned into keywords and they are associated with the column values.
 
 (defn create-item [db name description]
