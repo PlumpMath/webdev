@@ -1,10 +1,12 @@
 (ns webdev.core
   ;; We import our model code 
-  (:require [webdev.item.model :as items])
+  (:require [webdev.item.model :as items]
+            [webdev.item.handler :refer [handle-index-items] ])
   (:require
             ;; ring.adapter.jetty is an adapter we can use in dev and production
             [ring.adapter.jetty :as jetty]
             [ring.middleware.reload :refer [wrap-reload]]
+            [ring.middleware.params :refer [wrap-params]]
             [compojure.core :refer [defroutes ANY GET POST PUT DELETE]]
             [compojure.route :refer [not-found]]
             ;; handle-dump helps us to see the request in a nice format
@@ -14,21 +16,25 @@
 ;; We store the connection url for the database
 (def db "jdbc:postgresql://localhost/webdev")
 
+;; handler
 (defn greet [req]
   {:status 200
    :body "Hello, world!"
    :headers {}})
 
+;; handler
 (defn goodbye [req]
   {:status 200
    :body "Goodbye, cruel world!"
    "headers" {}})
 
+;; handler
 (defn about [req]
   {:status 200
    :body "Hello, I'm Mi-Mi Na. I love the beauty of Geometry"
    :headers {}})
 
+;; handler
 (defn yo [req]
   (let [name (get-in req [:route-params :name])]
    {:status 200
@@ -41,6 +47,7 @@
    "*" *
    ":" /})
 
+;; handler
 (defn calc [req]
   (let [a (Integer. (get-in req [:route-params :a]))
         b (Integer. (get-in req [:route-params :b]))
@@ -54,8 +61,8 @@
       :body (str "Unknown operator: " op)
       :headers {}})))
 
-
-(defroutes app
+;; compojure routes
+(defroutes routes
   (GET "/" [] greet)
   (GET "/goodbye" [] goodbye)
 
@@ -66,9 +73,32 @@
   
   (GET "/calc/:a/:op/:b" [] calc)
   (GET "/about" [] about)
+  (GET "/items" [] handle-index-items)
   
+  ;; para la siguiente ruta usamos un handler que no definimos aquí
+  ;; sino que está definido ya en la librería ring.handler.dump
+  ;; handle-dump nos permite ver de forma bonita la request
   (GET "/request" [] handle-dump)
   (not-found "Page not found"))
+
+;; middleware stack
+
+;; In our model.clj functions we have to pass a db parameter that represents
+;; the connection to the database. We will want to pass that into the handler
+;; To do that we create a middleware that adds the db to the Ring request
+;; Middleware are higher order functions
+;; That way we will ensure that the database is available to all handlers
+(defn wrap-db [hdlr]
+  (fn [req]
+    (hdlr (assoc req :webdev/db db))))
+
+(defn wrap-server [hdlr]
+  (fn [req]
+    (assoc-in (hdlr req)  [:headers "Server"] "Geometrica 9000"  )))
+
+
+(def app
+  (wrap-server (wrap-db (wrap-params routes))))
 
 ;; This is our main function and it runs the jetty adapter
 ;; run-jetty takes a handler and an options map.
